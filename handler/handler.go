@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/go-chi/render"
 	"github.com/kyler-swanson/truncr/db"
+	"github.com/kyler-swanson/truncr/handler/api"
 )
 
 var dbInstance db.Database
@@ -14,25 +14,13 @@ func CreateHandler(db db.Database) http.Handler {
 	router := chi.NewRouter()
 	dbInstance = db
 
-	router.MethodNotAllowed(methodNotAllowedHandler)
-	router.NotFound(notFoundHandler)
-	router.Route("/link", link)
+	router.Get("/", renderApp)
+
 	router.Route("/{shortLink}", func(router chi.Router) {
-		router.Use(ShortLinkContext)
 		router.Get("/", redirectLink)
 	})
 
+	api.Register(router, db)
+
 	return router
-}
-
-func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "application/json")
-	w.WriteHeader(405)
-	render.Render(w, r, ErrMethodNotAllowed)
-}
-
-func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "application/json")
-	w.WriteHeader(400)
-	render.Render(w, r, ErrNotFound)
 }
