@@ -16,7 +16,13 @@ import (
 )
 
 func main() {
-	addr := ":8080"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("defaulting to port %s", port)
+	}
+
+	addr := ":" + port
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("err: %s", err.Error())
